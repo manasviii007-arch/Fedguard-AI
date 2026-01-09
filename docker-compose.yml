@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  # Backend API Service
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: fedguard-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - ENVIRONMENT=demo
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Frontend Static Web App (Served via Nginx)
+  frontend:
+    image: nginx:alpine
+    container_name: fedguard-frontend
+    ports:
+      - "80:80"
+    volumes:
+      - ./frontend:/usr/share/nginx/html
+      - ./frontend/nginx.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - backend
+
+  # Mock Database (PostgreSQL) - Optional for this demo as we use in-memory mock data
+  # db:
+  #   image: postgres:13
+  #   environment:
+  #     POSTGRES_USER: user
+  #     POSTGRES_PASSWORD: password
+  #     POSTGRES_DB: fedguard
